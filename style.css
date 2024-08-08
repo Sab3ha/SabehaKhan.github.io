@@ -120,3 +120,9 @@ textarea {
   display: block;
 }
 
+img {
+  border-radius: 90%;
+  max-width:300px;
+  max-height:300px;
+}
+
