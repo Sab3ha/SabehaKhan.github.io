@@ -3,78 +3,63 @@ const scene = new THREE.Scene();
 const width = window.innerWidth;
 const height = window.innerHeight;
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+const nWidth = width / Math.max(width, height) * 10;
+const nHeight = height / Math.max(width, height) * 10;
 scene.add(camera);
 
 camera.position.z = 5;
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Add lighting to the scene
-const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
-scene.add(ambientLight);
+// Create materials with different colors
+const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue for the body
+const otherPartsMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow for the head, arms, and legs
 
-const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-pointLight.position.set(5, 5, 5);
-scene.add(pointLight);
+// Create geometries
+const bodyGeometry = new THREE.BoxGeometry(1, 2, 0.5);
+const headGeometry = new THREE.SphereGeometry(0.5, 32, 16);
+const armGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 32);
+const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.2, 32);
 
-// Create a material for the sphere and spikes
-const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00, shininess: 100 });
-const spikeMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000, shininess: 100 });
+// Create meshes with respective materials
+const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
+const headMesh = new THREE.Mesh(headGeometry, otherPartsMaterial);
+const leftArmMesh = new THREE.Mesh(armGeometry, otherPartsMaterial);
+const rightArmMesh = new THREE.Mesh(armGeometry, otherPartsMaterial);
+const leftLegMesh = new THREE.Mesh(legGeometry, otherPartsMaterial);
+const rightLegMesh = new THREE.Mesh(legGeometry, otherPartsMaterial);
 
-// Create a sphere to represent the core of the virus
-const sphereGeometry = new THREE.SphereGeometry(1, 32, 16);
-const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-scene.add(sphere);
+// Position the meshes
+headMesh.position.y = 1.5;
+leftArmMesh.position.set(-0.5, 0, 0);
+rightArmMesh.position.set(0.5, 0, 0);
+leftLegMesh.position.set(-0.3, -1.5, 0);
+rightLegMesh.position.set(0.3, -1.5, 0);
 
-// Create a group for the spikes
-const spikesGroup = new THREE.Group();
+// Create a group and add the meshes to it
+const group = new THREE.Group();
+group.add(bodyMesh);
+group.add(headMesh);
+group.add(leftArmMesh);
+group.add(rightArmMesh);
+group.add(leftLegMesh);
+group.add(rightLegMesh);
 
-// Create spikes and position them on the sphere
-const spikeGeometry = new THREE.ConeGeometry(0.1, 0.4, 4); // Pyramid shape
-const spikeCount = 50;
+// Add the group to the scene
+scene.add(group);
 
-for (let i = 0; i < spikeCount; i++) {
-  const spike = new THREE.Mesh(spikeGeometry, spikeMaterial);
-
-  // Randomly position spikes on the sphere's surface
-  const theta = Math.random() * Math.PI * 2;
-  const phi = Math.acos((Math.random() * 2) - 1);
-  const radius = 1.1; // Slightly larger than the sphere's radius
-
-  spike.position.x = radius * Math.sin(phi) * Math.cos(theta);
-  spike.position.y = radius * Math.sin(phi) * Math.sin(theta);
-  spike.position.z = radius * Math.cos(phi);
-
-  // Make spikes point outward
-  spike.lookAt(0, 0, 0);
-
-  spikesGroup.add(spike);
-}
-
-// Add the spikes group to the scene
-scene.add(spikesGroup);
-
-// Create edge geometry and material for the sphere
-const edgeGeometry = new THREE.EdgesGeometry(sphereGeometry);
-const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-const sphereEdges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-scene.add(sphereEdges);
-
-// Group for sphere and edges
-const virusGroup = new THREE.Group();
-virusGroup.add(sphere);
-virusGroup.add(sphereEdges);
-virusGroup.add(spikesGroup);
-scene.add(virusGroup);
+// Apply transformations to the group
+group.scale.set(1.2, 1.2, 1.2);
+group.rotation.y = Math.PI / 4;
 
 // Animation loop
 function animate() {
   requestAnimationFrame(animate);
 
-  // Rotate the virus
-  virusGroup.rotation.x += 0.01;
-  virusGroup.rotation.y += 0.01;
+  // Rotate the group
+  group.rotation.x += 0.01;
+  group.rotation.y += 0.01;
 
   renderer.render(scene, camera);
 }
